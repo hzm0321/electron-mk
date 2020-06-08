@@ -28,10 +28,31 @@ const TabList = ({ files, activeId, unSaveIds, onTabClick, onCloseTap, onFileBod
     // if (activeKey) {
     //   return;
     // }
-    if (files.length > 0 && files.length === saveFiles.current.length) {
-      return
-    } else if (files.length > 0 && files.length > saveFiles.current.length) {
-      setActiveKey(files[files.length - 1].id);
+    if (files.length) {
+      // 没变化
+      if (files.length === saveFiles.current.length) {
+        return;
+      } else if (files.length > saveFiles.current.length) {
+        // 增加
+        setActiveKey(files[files.length - 1].id);
+      } else {
+        // 减少
+        // 生成现在的id数组
+        const nowIds = files.map(file => file.id);
+        // 记录上次的index
+        let lastIndex = 0;
+        saveFiles.current.forEach((file, index) => {
+          if (!nowIds.includes(file.id)) {
+            lastIndex = index;
+          }
+        });
+        if (lastIndex === files.length) {
+          // 说明是最后一个元素
+          setActiveKey(files[files.length - 1].id);
+        } else {
+          setActiveKey(files[lastIndex].id);
+        }
+      }
     }
     // 临时保存files
     saveFiles.current = files;
