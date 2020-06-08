@@ -1,7 +1,8 @@
-import { Button, List } from "antd";
-import React, { useState } from "react";
+import { Button, Input, List } from "antd";
+import React, { useEffect, useState } from "react";
 import { FileMarkdownTwoTone } from "@ant-design/icons";
 import styles from './FileList.module.less';
+import EditInput from "../EditInput/EditInput";
 
 const defaultFiles = [
   {
@@ -36,12 +37,21 @@ const defaultFiles = [
  * @param onFileClick {function} 点击每个标题的方法
  * @param onSaveEdit {function} 保存
  * @param onFileDelete {function} 删除
+ * @param isCloseEdit
  * @returns {*}
  * @constructor
  */
 const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
   const [editStatus, setEditStatus] = useState(false); // 是否为可编辑状态
-  const [inputValue, setInputValue] = useState(''); // 输入框的值
+
+  const closeEdit = () => {
+    setEditStatus(false);
+  }
+
+  const handleEnter = (value, id) => {
+    setEditStatus(false);
+    onSaveEdit(value, id)
+  }
 
   return (
     <div className={styles['file-list']}>
@@ -49,19 +59,46 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
         dataSource={files}
         renderItem={file => (
           <List.Item>
-            <span className={styles['title-left']} onClick={() => onFileClick(file.id)}>
-              <FileMarkdownTwoTone />
-              {file.title}
-            </span>
-            <span className="btn-options">
-              <Button
-                type={"text"}
-                size={"small"}
-              >
-                编辑
-              </Button>
-              <Button type={"primary"} size={"small"} danger>删除</Button>
-            </span>
+            {file.id === editStatus ?
+              // <div>
+              //   <Input
+              //     placeholder="可编辑状态"
+              //     value={inputValue}
+              //     onChange={e => setInputValue(e.target.value)}
+              //   />
+              // </div>
+              <EditInput
+                placeholder="请输入新的标题"
+                iconClick={closeEdit}
+                defaultValue={file.title}
+                onEnterPress={(value) => handleEnter(value, file.id)}
+              />
+              :
+              (<>
+                  <span className={styles['title-left']} onClick={() => onFileClick(file.id)}>
+                    <FileMarkdownTwoTone />
+                    {file.title}
+                  </span>
+                <span className={styles['btn-options']}>
+                  <Button
+                    type={"primary"}
+                    size={"small"}
+                    onClick={e => {
+                      setEditStatus(file.id);
+                    }}
+                  >
+                    编辑
+                  </Button>
+                  <Button
+                    type={"primary"}
+                    size={"small"}
+                    danger
+                    onClick={() => onFileDelete(file.id)}
+                  >
+                    删除
+                  </Button>
+                  </span>
+              </>)}
           </List.Item>
         )}
       />

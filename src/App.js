@@ -43,19 +43,64 @@ function App() {
   const [openFileIds, setOpenFileIds] = useState([]); // 当前被打开的文件
   const [unSaveFileIds, setUnSaveFileIds] = useState([]); // 未保存的文件
 
-  const openedFiles = openFileIds.map(openID => {
-    return files[openID]
-  })
+  const openedFiles = openFileIds.map(openId => files.find(v => v.id === openId))
 
+  /**
+   * 文件列表标题点击添加tab
+   * @param fileId {string}
+   */
   const fileClick = (fileId) => {
-    console.log({ fileId })
-    setOpenFileIds([...openFileIds, fileId])
+    // console.log({ fileId })
+    if (!openFileIds.includes(fileId)) {
+      setOpenFileIds([...openFileIds, fileId]);
+    } else {
+      setActiveFileId(fileId);
+    }
   }
 
+  /**
+   * tab关闭
+   * @param fileId {string}
+   */
   const tabClose = (fileId) => {
     const newOpenFileIds = openFileIds.filter((id) => id !== fileId);
     setOpenFileIds(newOpenFileIds);
   };
+
+  /**
+   * 修改文件列表body内容
+   * @param body {string}
+   * @param fileId {string}
+   */
+  const fileChange = (body, fileId) => {
+    const newFiles = files.map((file) => {
+      if (file.id === fileId) {
+        file.body = body;
+      }
+      return file;
+    })
+    setFiles(newFiles);
+    setActiveFileId(fileId);
+    if (!unSaveFileIds.includes(fileId)) {
+      setUnSaveFileIds([...unSaveFileIds, fileId]);
+    }
+  }
+
+  const deleteFile = (fileId) => {
+    const newFiles = files.filter(file => file.id !== fileId);
+    setFiles(newFiles);
+    tabClose(fileId);
+  }
+
+  const saveTitle = (title, fileId) => {
+    const newFiles = files.map(file => {
+      if (file.id === fileId) {
+        file.title = title
+      }
+      return file
+    });
+    setFiles(newFiles);
+  }
 
   return (
     <div className="wrapper">
@@ -66,7 +111,12 @@ function App() {
               console.log(v)
             }}
           />
-          <FileList files={files} onFileClick={fileClick} />
+          <FileList
+            files={files}
+            onFileClick={fileClick}
+            onFileDelete={deleteFile}
+            onSaveEdit={saveTitle}
+          />
           <div className="file-bottom">
             <BottomBtn
               text="新建"
@@ -78,7 +128,7 @@ function App() {
               text="导入"
               icon={<ImportOutlined />}
               onBtnClick={() => console.log(2)}
-              type=""
+              type="primary"
             />
           </div>
         </Col>
@@ -86,6 +136,9 @@ function App() {
           <TabList
             files={openedFiles}
             onCloseTap={tabClose}
+            onFileBodyChange={fileChange}
+            unSaveIds={unSaveFileIds}
+            activeId={activeFileId}
           />
         </Col>
       </Row>

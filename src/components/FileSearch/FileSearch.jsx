@@ -4,9 +4,8 @@ import { Input } from "antd";
 import PropTypes from 'prop-types';
 
 import './FileSearch.less';
+import EditInput from "../EditInput/EditInput";
 import useKeyPress from "../../hooks/useKeyPress";
-
-const { Search } = Input;
 
 /**
  * mk标题内容搜索组件
@@ -17,10 +16,6 @@ const { Search } = Input;
  */
 const FileSearch = ({ title, onFileSearch }) => {
   const [inputActive, setInputActive] = useState(false); // 输入框是否被激活
-  const [inputValue, setInputValue] = useState(''); // input框中的值
-  const enterPressed = useKeyPress(13); // 按下enter
-  const escPressed = useKeyPress(27); // 按下esc
-  const inputRef = useRef();
 
   const startSearch = () => {
     setInputActive(true);
@@ -28,31 +23,19 @@ const FileSearch = ({ title, onFileSearch }) => {
 
   const closeSearch = () => {
     setInputActive(false);
-    setInputValue('');
     onFileSearch(false);
   }
-
-  useEffect(() => {
-    if (enterPressed && inputActive) {
-      onFileSearch(inputValue);
-    }
-    if (escPressed && inputActive) {
-      closeSearch();
-    }
-  })
-
-  useEffect(() => {
-    if (inputActive) {
-      inputRef.current.focus();
-    }
-  }, [inputActive])
 
   return (
     <div className="search-wrapper">
       {inputActive ?
         <div className="search-input">
-          <Input value={inputValue} onChange={e => setInputValue(e.target.value)} ref={inputRef} />
-          <CloseOutlined onClick={closeSearch} />
+          <EditInput
+            placeholder="请输入要搜索的内容"
+            iconClick={closeSearch}
+            onEnterPress={onFileSearch}
+            onEscPress={closeSearch}
+          />
         </div>
         :
         <div className="search-content">
