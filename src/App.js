@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './App.less';
 import { Button, Col, Row } from "antd";
 import { FileAddOutlined, ImportOutlined } from "@ant-design/icons";
+import uuidV4 from 'uuid/dist/v4';
 
 
 import FileSearch from "./components/FileSearch/FileSearch.jsx";
@@ -86,19 +87,48 @@ function App() {
     }
   }
 
+  /**
+   * 删除文件
+   * @param fileId {string}
+   */
   const deleteFile = (fileId) => {
     const newFiles = files.filter(file => file.id !== fileId);
     setFiles(newFiles);
     tabClose(fileId);
   }
 
-  const saveTitle = (title, fileId) => {
+  /**
+   * 保存文件
+   * @param title {string}
+   * @param fileId {string}
+   * @param isNew {boolean} 是否为新建
+   */
+  const saveTitle = (title, fileId, isNew = false) => {
     const newFiles = files.map(file => {
       if (file.id === fileId) {
         file.title = title
+        file.isNew = false
       }
       return file
     });
+    setFiles(newFiles);
+  }
+
+  /**
+   * 创建新文件
+   */
+  const createNewFile = () => {
+    const newId = uuidV4();
+    const newFiles = [
+      ...files,
+      {
+        id: newId,
+        title: '',
+        body: '## 请输入内容',
+        createdAt: new Date().getTime(),
+        isNew: true,
+      }
+    ]
     setFiles(newFiles);
   }
 
@@ -121,7 +151,7 @@ function App() {
             <BottomBtn
               text="新建"
               icon={<FileAddOutlined />}
-              onBtnClick={() => console.log(1)}
+              onBtnClick={createNewFile}
               type="primary"
             />
             <BottomBtn

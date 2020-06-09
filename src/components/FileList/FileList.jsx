@@ -48,9 +48,15 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
     setEditStatus(false);
   }
 
-  const handleEnter = (value, id) => {
+  /**
+   * 按下回车确认
+   * @param title {string} 标题内容
+   * @param fileId {string} 文件if
+   * @param isNew {boolean} 是否来自新建操作
+   */
+  const handleEnter = (title, fileId, isNew) => {
     setEditStatus(false);
-    onSaveEdit(value, id)
+    onSaveEdit(title, fileId, isNew)
   }
 
   return (
@@ -59,7 +65,7 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
         dataSource={files}
         renderItem={file => (
           <List.Item>
-            {file.id === editStatus ?
+            {file.id === editStatus || file.isNew ?
               // <div>
               //   <Input
               //     placeholder="可编辑状态"
@@ -71,7 +77,7 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
                 placeholder="请输入新的标题"
                 iconClick={closeEdit}
                 defaultValue={file.title}
-                onEnterPress={(value) => handleEnter(value, file.id)}
+                onEnterPress={(value) => handleEnter(value, file.id, file.isNew)}
               />
               :
               (<>
