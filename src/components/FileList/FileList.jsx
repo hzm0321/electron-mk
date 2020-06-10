@@ -1,35 +1,8 @@
-import { Button, Input, List } from "antd";
+import { Button, Input, List, message } from "antd";
 import React, { useEffect, useState } from "react";
 import { FileMarkdownTwoTone } from "@ant-design/icons";
 import styles from './FileList.module.less';
 import EditInput from "../EditInput/EditInput";
-
-const defaultFiles = [
-  {
-    id: '1',
-    title: 'first post',
-    body: '*should be aware of this*',
-    createdAt: 1563762965704
-  },
-  {
-    id: '2',
-    title: 'second post',
-    body: '## this is the title',
-    createdAt: 1563762965704
-  },
-  {
-    id: '3',
-    title: '你好世界',
-    body: '### 这是另外一个小标题欧',
-    createdAt: 1563762965704
-  },
-  {
-    id: '4',
-    title: '你好世界',
-    body: '**粗体内容**',
-    createdAt: 1563762965704
-  }
-]
 
 /**
  * mk列表的标题展示
@@ -49,7 +22,7 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
   }
 
   /**
-   * 按下回车确认
+   * 按下回车确认 这里做校验拦截操作
    * @param title {string} 标题内容
    * @param fileId {string} 文件if
    * @param isNew {boolean} 是否来自新建操作
