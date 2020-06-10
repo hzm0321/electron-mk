@@ -70,7 +70,7 @@ function App() {
   const filesArr = objToArr(files); // 对象形式的files转为为数组形式的field方便子组件引用
   const fileListArr = (searchedFiles.length > 0) ? searchedFiles : filesArr; // 文件搜索结果
   const savedLocation = `${remote.app.getPath('documents')}/electron`; // 文件保存在本地的位置
-
+  console.log('app', { files })
   /**
    * 文件列表标题点击添加tab
    * @param fileId {string}
@@ -125,14 +125,20 @@ function App() {
   /**
    * 删除文件
    * @param fileId {string}
+   * @param isNew {boolean} 是否为新建操作
    */
-  const deleteFile = (fileId) => {
+  const deleteFile = (fileId, isNew) => {
+    if (isNew) {
+      delete files[fileId];
+      setFiles({ ...files });
+      return;
+    }
     fileHelper.deleteFile(files[fileId].path).then(() => {
       delete files[fileId];
-      setFiles(files);
+      setFiles({ ...files });
       saveFilesToStore(files);
       tabClose(fileId)
-    })
+    });
   }
   /**
    * 保存文件标题

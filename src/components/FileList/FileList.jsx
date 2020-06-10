@@ -16,8 +16,16 @@ import EditInput from "../EditInput/EditInput";
  */
 const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
   const [editStatus, setEditStatus] = useState(false); // 是否为可编辑状态
-
-  const closeEdit = () => {
+  console.log({ files })
+  /**
+   * 关闭编辑输入框
+   * @param fileId {string}
+   * @param isNew {boolean} 是否为新建操作生成的文件
+   */
+  const closeEdit = (fileId, isNew) => {
+    if (isNew) {
+      onFileDelete(fileId, isNew);
+    }
     setEditStatus(false);
   }
 
@@ -28,6 +36,13 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
    * @param isNew {boolean} 是否来自新建操作
    */
   const handleEnter = (title, fileId, isNew) => {
+    // 判断是否同名
+    const allFilesTitle = files.map((file) => file.title);
+    const oldTitle = files.find(file => file.id === fileId).title;
+    if (allFilesTitle.includes(title) && title !== oldTitle) {
+      message.error('文件名不能相同');
+      return;
+    }
     setEditStatus(false);
     onSaveEdit(title, fileId, isNew)
   }
@@ -48,9 +63,9 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
               // </div>
               <EditInput
                 placeholder="请输入新的标题"
-                iconClick={closeEdit}
+                iconClick={() => closeEdit(file.id, file.isNew)}
                 defaultValue={file.title}
-                onEnterPress={(value) => handleEnter(value, file.id, file.isNew)}
+                onEnterPress={(value) => handleEnter(value.trim(), file.id, file.isNew)}
               />
               :
               (<>
