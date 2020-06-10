@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './App.less';
-import { Col, Row } from "antd";
+import { Col, Row, message } from "antd";
 import { FileAddOutlined, ImportOutlined } from "@ant-design/icons";
 import uuidV4 from 'uuid/dist/v4';
 import { flattenArr, objToArr } from "./utils/helper";
@@ -29,7 +29,13 @@ const saveFilesToStore = (files) => {
     }
     return pre
   }, {});
-  store.set('files', filesStoreObj);
+  try {
+    store.set('files', filesStoreObj);
+    message.success('文件本地保存成功');
+  } catch (e) {
+    message.error('文件本地持久存储失败')
+  }
+
 }
 // import 'bootstrap/dist/css/bootstrap.min.css';
 const defaultFiles = [
@@ -70,25 +76,36 @@ function App() {
   const filesArr = objToArr(files); // 对象形式的files转为为数组形式的field方便子组件引用
   const fileListArr = (searchedFiles.length > 0) ? searchedFiles : filesArr; // 文件搜索结果
   const savedLocation = `${remote.app.getPath('documents')}/electron`; // 文件保存在本地的位置
-  console.log('app', { files })
+
   /**
    * 文件列表标题点击添加tab
    * @param fileId {string}
    */
-  const fileClick = (fileId) => {
+  const fileClick = async (fileId) => {
     // console.log({ fileId })
-    setActiveFileId(fileId);
+    let isOpenTab = true; // 是否打开tab
     const currentFile = files[fileId];
     const { id, title, path, isLoaded } = currentFile
     if (!isLoaded) {
-      fileHelper.readFile(currentFile.path).then(value => {
+      await fileHelper.readFile(currentFile.path).then(value => {
         const newFile = { ...files[fileId], body: value, isLoaded: true }
         setFiles({ ...files, [fileId]: newFile })
+      }).catch((err) => {
+        // 源文件被删除
+        console.error(err);
+        message.error(`${files[fileId].title}.mk的源文件已被删除`)
+        delete files[fileId];
+        const newFiles = { ...files };
+        setFiles(newFiles);
+        saveFilesToStore(newFiles);
+        isOpenTab = false;
       })
     }
-    if (!openFileIds.includes(fileId)) {
-      setOpenFileIds([...openFileIds, fileId]);
-    } else {
+    if (isOpenTab) {
+      if (!openFileIds.includes(fileId)) {
+        setOpenFileIds([...openFileIds, fileId]);
+      }
+      setActiveFileId(fileId);
     }
   }
 
@@ -138,6 +155,13 @@ function App() {
       setFiles({ ...files });
       saveFilesToStore(files);
       tabClose(fileId)
+    }).catch((err) => {
+      console.error(err);
+      message.error(`${files[fileId].title}.mk的源文件已被删除`)
+      delete files[fileId];
+      const newFiles = { ...files };
+      setFiles(newFiles);
+      saveFilesToStore(newFiles);
     });
   }
   /**
@@ -174,6 +198,12 @@ function App() {
    * 创建新文件
    */
   const createNewFile = () => {
+    // 判断当前是否有正在新建的数据
+    const isCurrentNew = !!filesArr.find(file => file.isNew === true);
+    if (isCurrentNew) {
+      message.error('当保存上一个新建的文档,再新建文件');
+      return;
+    }
     const newId = uuidV4();
     const newFile = {
       id: newId,
