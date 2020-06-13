@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './App.less';
-import { Col, Row, message } from "antd";
+import { Col, message, Row } from "antd";
 import { FileAddOutlined, ImportOutlined } from "@ant-design/icons";
 import uuidV4 from 'uuid/dist/v4';
 import { flattenArr, objToArr } from "./utils/helper";

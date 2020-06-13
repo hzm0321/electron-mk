@@ -18,3 +18,21 @@ export const flattenArr = (arr) => {
 export const objToArr = (obj) => {
   return Object.keys(obj).map(key => obj[key])
 }
+
+/**
+ * 获取父节点
+ * @param node {dom} 当前子节点
+ * @param parentClassName {string} 父节点类名称
+ * @returns {node|boolean}
+ */
+export const getParentNode = (node, parentClassName) => {
+  let current = node;
+  while (current !== null) {
+    // 循环出口
+    if (current.classList.contains(parentClassName)) {
+      return current
+    }
+    current = current.parentNode;
+  }
+  return false;
+}

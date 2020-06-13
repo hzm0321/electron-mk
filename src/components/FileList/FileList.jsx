@@ -3,6 +3,12 @@ import React, { useEffect, useState } from "react";
 import { FileMarkdownTwoTone } from "@ant-design/icons";
 import styles from './FileList.module.less';
 import EditInput from "../EditInput/EditInput";
+import useContextMenu from "../../hooks/useContextMenu";
+import { getParentNode } from "../../utils/helper";
+
+
+const { remote } = window.require('electron');
+const { Menu, MenuItem } = remote;
 
 /**
  * mk列表的标题展示
@@ -16,7 +22,35 @@ import EditInput from "../EditInput/EditInput";
  */
 const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
   const [editStatus, setEditStatus] = useState(false); // 是否为可编辑状态
-  console.log({ files })
+
+  // useEffect(() => {
+  //   const menu = new Menu();
+  //   menu.append(new MenuItem({
+  //     label: '打开',
+  //     click: () => console.log('打开')
+  //   }))
+  //   const handleContextMenu = (e) => {
+  //     // 指定在哪个窗口弹出
+  //     menu.popup({ window: remote.getCurrentWindow()})
+  //   }
+  //   window.addEventListener('contextmenu', handleContextMenu);
+  //   return () => {
+  //     window.removeEventListener('contextmenu', handleContextMenu);
+  //   }
+  // })
+
+  const clickedElement = useContextMenu([
+    {
+      label: '打开',
+      click: () => {
+        const parentElement = getParentNode(clickedElement.current, 'ant-list-item');
+        if (parentElement) {
+          onFileClick(parentElement.dataset.id.toString())
+        }
+      }
+    }
+  ], '.FileList_file-list__2hxjD', [files])
+
   /**
    * 关闭编辑输入框
    * @param fileId {string}
@@ -52,7 +86,7 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
       <List
         dataSource={files}
         renderItem={file => (
-          <List.Item>
+          <List.Item data-id={file.id} data-title={file.title}>
             {file.id === editStatus || file.isNew ?
               // <div>
               //   <Input
