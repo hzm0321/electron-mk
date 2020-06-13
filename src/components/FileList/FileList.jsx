@@ -66,6 +66,7 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
                 iconClick={() => closeEdit(file.id, file.isNew)}
                 defaultValue={file.title}
                 onEnterPress={(value) => handleEnter(value.trim(), file.id, file.isNew)}
+                onEscPress={() => closeEdit(file.id, file.isNew)}
               />
               :
               (<>
