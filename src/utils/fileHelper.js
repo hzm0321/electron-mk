@@ -1,3 +1,4 @@
+console.log({ window })
 const fs = window.require('fs').promises;
 
 /**

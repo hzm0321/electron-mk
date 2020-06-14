@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.less';
 import { Col, message, Row } from "antd";
 import { FileAddOutlined, ImportOutlined } from "@ant-design/icons";
@@ -10,11 +10,13 @@ import FileSearch from "./components/FileSearch/FileSearch.jsx";
 import FileList from "./components/FileList/FileList.jsx";
 import BottomBtn from "./components/BottomBtn/BottomBtn.jsx";
 import TabList from "./components/TabList/TabList";
+import useIpcRenderer from "./hooks/useIpcRenderer";
 
 const { join, basename, extname, dirname } = window.require('path');
 const { remote, ipcRenderer } = window.require('electron');
 const Store = window.require('electron-store'); // 创建本地存储
 const store = new Store({ name: 'Files Data' });
+const settingsStore = new Store({ name: 'Settings' })
 const saveFilesToStore = (files) => {
   // 格式化store中存储的内容
   const filesStoreObj = objToArr(files).reduce((pre, cur) => {
@@ -75,7 +77,7 @@ function App() {
   const openedFiles = openFileIds.map(openId => files[openId]); // 当前被打开的文件
   const filesArr = objToArr(files); // 对象形式的files转为为数组形式的field方便子组件引用
   const fileListArr = (searchedFiles.length > 0) ? searchedFiles : filesArr; // 文件搜索结果
-  const savedLocation = `${remote.app.getPath('documents')}/electron`; // 文件保存在本地的位置
+  const savedLocation = settingsStore.get('savedFileLocation').toString() || `${remote.app.getPath('documents')}/electron`; // 文件保存在本地的位置
   const activeFile = files[activeFileId]; // 当前被选中的文件信息
   /**
    * 文件列表标题点击添加tab
@@ -186,7 +188,14 @@ function App() {
       fileHelper.renameFile(oldPath, newPath).then(() => {
         setFiles(newFile);
         saveFilesToStore(newFile);
-      })
+      }).catch(err => {
+        // 源文件被删除
+        console.error(err);
+        message.error(`${files[fileId].title}.mk的源文件已被删除`)
+        const { [fileId]: deleteValue, ...newFiles } = files;
+        setFiles(newFiles);
+        saveFilesToStore(newFiles);
+      });
     }
   }
 
@@ -271,6 +280,21 @@ function App() {
       message.error('文件读取失败');
     })
   }
+
+  // useEffect(() => {
+  //   const callback = () => {
+  //     console.log('hello world');
+  //   }
+  //   ipcRenderer.on('create-new-file',callback)
+  //   return () => {
+  //     ipcRenderer.removeListener('create-new-file', callback);
+  //   }
+  // })
+  useIpcRenderer({
+    'create-new-file': createNewFile,
+    'import-file': importFilesArr
+  })
+
 
   return (
     <div className="wrapper">
